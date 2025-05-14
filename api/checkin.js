@@ -1,13 +1,6 @@
 import admin from "firebase-admin";
 
-// Initialize Firebase (only once)
-if (!getApps().length) {
-  initializeApp({
-    credential: cert("./firebase/serviceAccountKey.json"),
-  });
-}
-
-// Initialize Firebase only once
+// Initialize Firebase only once (Vercel-compatible)
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
@@ -20,7 +13,7 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-// Helper to convert number to ordinal string (1st, 2nd, 3rd, etc.)
+// Convert number to ordinal string (1st, 2nd, 3rd, etc.)
 function getOrdinal(n) {
   const s = ["th", "st", "nd", "rd"];
   const v = n % 100;
@@ -30,34 +23,32 @@ function getOrdinal(n) {
 export default async function handler(req, res) {
   try {
     const user = req.query.user;
+    if (!user) {
+      return res.status(400).send("Missing 'user' query parameter.");
+    }
 
-  if (!user) {
-    return res.status(400).send("Missing 'user' query parameter.");
-  }
+    const userId = user.toLowerCase();
+    const docRef = db.collection("checkins").doc(userId);
+    const docSnap = await docRef.get();
 
-  const userId = user.toLowerCase();
-  const docRef = db.collection("checkins").doc(userId);
-  const docSnap = await docRef.get();
+    let count = 0;
+    let response = "";
 
-  let count = 0;
-  let response = "";
+    if (docSnap.exists) {
+      count = docSnap.data().count + 1;
+      await docRef.update({ count });
+      const ordinal = getOrdinal(count);
+      response = `@${user} has just checked in for the ${ordinal} time.`;
+    } else {
+      count = 1;
+      await docRef.set({ count });
+      response = `@${user} has checked in for the first time. Welcome!`;
+    }
 
-  if (docSnap.exists) {
-    count = docSnap.data().count + 1;
-    await docRef.update({ count });
-    const ordinal = getOrdinal(count);
-    response = `@${user} has just checked in for the ${ordinal} time.`;
-  } else {
-    count = 1;
-    await docRef.set({ count });
-    response = `@${user} has checked in for the first time. Welcome!`;
-  }
-
-  res.setHeader("Content-Type", "text/plain");
-  return res.status(200).send(response);
-    } catch (err) {
+    res.setHeader("Content-Type", "text/plain");
+    return res.status(200).send(response);
+  } catch (err) {
     console.error(err);
     return res.status(500).send("Internal server error.");
   }
-  
 }
