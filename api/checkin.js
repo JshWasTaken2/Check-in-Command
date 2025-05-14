@@ -1,5 +1,4 @@
 import admin from "firebase-admin";
-import { onRequest } from "firebase-functions/v2/https";
 import { initializeApp, cert, getApps } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 
