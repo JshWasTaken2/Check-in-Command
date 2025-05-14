@@ -31,7 +31,8 @@ function getOrdinal(n) {
 }
 
 export default async function handler(req, res) {
-  const user = req.query.user;
+  try {
+    const user = req.query.user;
 
   if (!user) {
     return res.status(400).send("Missing 'user' query parameter.");
@@ -57,4 +58,9 @@ export default async function handler(req, res) {
 
   res.setHeader("Content-Type", "text/plain");
   return res.status(200).send(response);
+    } catch (err) {
+    console.error(err);
+    return res.status(500).send("Internal server error.");
+  }
+  
 }
