@@ -1,5 +1,4 @@
 import admin from "firebase-admin";
-import { initializeApp, cert, getApps } from "firebase-admin/app";
 
 // Initialize Firebase (only once)
 if (!getApps().length) {
