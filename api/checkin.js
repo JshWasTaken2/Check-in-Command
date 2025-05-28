@@ -38,11 +38,11 @@ export default async function handler(req, res) {
       count = docSnap.data().count + 1;
       await docRef.update({ count });
       const ordinal = getOrdinal(count);
-      response = `@${user} has just checked in for the ${ordinal} time.`;
+      response = `@${user} has just checked in for the ${ordinal} time. You got this!`;
     } else {
       count = 1;
       await docRef.set({ count });
-      response = `@${user} has checked in for the first time. Welcome!`;
+      response = `@${user} has checked in for the first time. You got this!`;
     }
 
     res.setHeader("Content-Type", "text/plain");
